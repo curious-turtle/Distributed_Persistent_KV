@@ -39,3 +39,17 @@ cc_test(
     deps = ["//kvstore"],
     copts = CXX17_COPTS,
 )
+
+cc_test(
+    name = "raft_test",
+    srcs = ["test_raft.cpp"],
+    deps = ["//raft"],
+    copts = CXX17_COPTS,
+)
+
+cc_test(
+    name = "wal_delete_restore_test",
+    srcs = ["test_wal_delete_restore.cpp"],
+    deps = ["//kvstore"],
+    copts = CXX17_COPTS,
+)

@@ -14,6 +14,7 @@ public:
     ~LogManager();
 
     void log_put(const std::string &key, const std::string &value, bool log_to_storage = true);
+    void log_delete(const std::string &key, bool log_to_storage = true);
     void restore();
     Storage &get_storage() { return storage_; }
 

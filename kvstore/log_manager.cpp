@@ -54,6 +54,35 @@ void LogManager::log_put(const std::string &key, const std::string &value, bool 
     }
 }
 
+void LogManager::log_delete(const std::string &key, bool log_to_storage)
+{
+    std::string record = "D " + key + "\n";
+
+    log_stream_ << record;
+    if (!log_stream_)
+    {
+        std::perror("write");
+        log_stream_.clear();
+        return;
+    }
+
+    batch_count++;
+    auto now = std::chrono::steady_clock::now();
+    auto ms_since_last = std::chrono::duration_cast<std::chrono::milliseconds>(now - last_flush_).count();
+
+    if (batch_count >= batch_size || ms_since_last >= flush_interval_ms)
+    {
+        log_stream_.flush();
+        batch_count = 0;
+        last_flush_ = now;
+    }
+
+    if (log_to_storage)
+    {
+        storage_.remove(key);
+    }
+}
+
 void LogManager::restore()
 {
     std::ifstream replay_stream(log_file_);
@@ -65,6 +94,11 @@ void LogManager::restore()
         {
             replay_stream >> key >> value;
             storage_.put(key, value);
+        }
+        else if (operation == "D")
+        {
+            replay_stream >> key;
+            storage_.remove(key);
         }
     }
 }
