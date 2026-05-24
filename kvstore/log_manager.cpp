@@ -1,14 +1,14 @@
 #include "log_manager.h"
 #include "storage.h"
-#include <iostream>
-#include <fcntl.h>
-#include <unistd.h>
 #include <chrono>
+#include <cstdio>
+#include <cstdlib>
+#include <iostream>
 
 LogManager::LogManager(const std::string &log_file, Storage &storage) : log_file_(log_file), storage_(storage)
 {
-    fd = open(log_file.c_str(), O_WRONLY | O_CREAT | O_APPEND, 0644);
-    if (fd < 0)
+    log_stream_.open(log_file_, std::ios::out | std::ios::app);
+    if (!log_stream_.is_open())
     {
         std::cerr << "Failed to open log file: " << log_file << std::endl;
         exit(1);
@@ -18,10 +18,10 @@ LogManager::LogManager(const std::string &log_file, Storage &storage) : log_file
 
 LogManager::~LogManager()
 {
-    if (fd >= 0)
+    if (log_stream_.is_open())
     {
-        fsync(fd);
-        close(fd);
+        log_stream_.flush();
+        log_stream_.close();
     }
 }
 
@@ -29,10 +29,11 @@ void LogManager::log_put(const std::string &key, const std::string &value, bool 
 {
     std::string record = "P " + key + " " + value + "\n";
 
-    ssize_t written = write(fd, record.c_str(), record.size());
-    if (written < 0)
+    log_stream_ << record;
+    if (!log_stream_)
     {
-        perror("write");
+        std::perror("write");
+        log_stream_.clear();
         return;
     }
 
@@ -42,7 +43,7 @@ void LogManager::log_put(const std::string &key, const std::string &value, bool 
 
     if (batch_count >= batch_size || ms_since_last >= flush_interval_ms)
     {
-        fsync(fd);
+        log_stream_.flush();
         batch_count = 0;
         last_flush_ = now;
     }

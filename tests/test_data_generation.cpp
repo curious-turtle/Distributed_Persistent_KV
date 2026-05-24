@@ -4,9 +4,13 @@
 #include "kvstore/log_manager.h"
 #include "tests/test_data_generation.h"
 
-void generate_test_data(fs::path &oLogFilePath, Storage &oStorage, bool ilog_to_storage, unsigned int num_entries)
+void generate_test_data(fs::path &oLogFilePath,
+                        Storage &oStorage,
+                        bool ilog_to_storage,
+                        unsigned int num_entries,
+                        const fs::path &log_file_path)
 {
-    fs::path logfile = "data/data.log";
+    fs::path logfile = log_file_path;
     fs::create_directories(logfile.parent_path());
 
     // Truncate or create the log file so LogManager starts fresh

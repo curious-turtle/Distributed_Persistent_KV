@@ -15,9 +15,16 @@
 
 int main(int argc, char **argv)
 {
+    const fs::path test_dir = "data/read_latency_test";
+    const fs::path sstable_dir = test_dir / "sstables";
+    const fs::path logfile_path = test_dir / "data.log";
+
+    fs::remove_all(test_dir);
+    fs::create_directories(sstable_dir);
+
     fs::path logfile = "";
-    Storage storage;
-    generate_test_data(logfile, storage, false);
+    Storage storage(sstable_dir.string());
+    generate_test_data(logfile, storage, false, 10000, logfile_path);
 
     std::ifstream f(logfile);
     if (!f.is_open())

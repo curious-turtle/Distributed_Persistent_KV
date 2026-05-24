@@ -11,9 +11,17 @@
 
 int main(int argc, char **argv)
 {
+    const fs::path test_dir = "data/restore_test";
+    const fs::path sstable_dir = test_dir / "sstables";
+    const fs::path logfile_path = test_dir / "data.log";
+    const unsigned int num_entries = 10000;
+
+    fs::remove_all(test_dir);
+    fs::create_directories(sstable_dir);
+
     fs::path logfile = "";
-    Storage storage;
-    generate_test_data(logfile, storage, false);
+    Storage storage(sstable_dir.string(), num_entries + 1);
+    generate_test_data(logfile, storage, false, num_entries, logfile_path);
 
     std::ifstream f(logfile);
     if (!f.is_open())
@@ -31,8 +39,7 @@ int main(int argc, char **argv)
 
     std::cout << "Restore took " << ms << " ms" << std::endl;
 
-    int sz = storage.size();
-    for (int i = 0; i < sz; i++)
+    for (unsigned int i = 0; i < num_entries; i++)
     {
         std::string key = std::to_string(i);
         std::string expected = std::to_string(i);
@@ -42,6 +49,12 @@ int main(int argc, char **argv)
             std::cerr << "Mismatch at " << i << ": got '" << got << "' expected '" << expected << "'\n";
             return 2;
         }
+    }
+
+    if (storage.size() != static_cast<int>(num_entries))
+    {
+        std::cerr << "Expected size " << num_entries << ", got " << storage.size() << "\n";
+        return 3;
     }
 
     std::cout << "Validation passed" << std::endl;

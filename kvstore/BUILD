@@ -11,5 +11,8 @@ cc_library(
         "storage.h",
     ],
     visibility = ["//visibility:public"],
-    copts = ["-std=c++17"],
+    copts = select({
+        "@bazel_tools//src/conditions:windows": ["/std:c++17"],
+        "//conditions:default": ["-std=c++17"],
+    }),
 )

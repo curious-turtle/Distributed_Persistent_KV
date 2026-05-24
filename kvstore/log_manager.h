@@ -18,13 +18,13 @@ public:
     Storage &get_storage() { return storage_; }
 
 private:
-    int fd;
+    std::ofstream log_stream_;
     std::string log_file_;
     Storage &storage_;
     int batch_count = 0;
-    int batch_size = 200;
+    int batch_size = 10000;
     std::chrono::steady_clock::time_point last_flush_;
-    int flush_interval_ms = 5;
+    int flush_interval_ms = 1000;
 };
 
 #endif // KVSTORE_LOG_MANAGER_H

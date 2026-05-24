@@ -4,5 +4,8 @@ cc_binary(
     name = "app",
     srcs = ["main.cpp"],
     deps = ["//kvstore"],
-    copts = ["-std=c++17"],
+    copts = select({
+        "@bazel_tools//src/conditions:windows": ["/std:c++17"],
+        "//conditions:default": ["-std=c++17"],
+    }),
 )
